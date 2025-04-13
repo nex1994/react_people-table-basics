@@ -5,7 +5,6 @@ import classNames from 'classnames';
 
 type Props = {
   person: Person | null;
-  key: string;
   people: Person[];
 };
 
