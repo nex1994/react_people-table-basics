@@ -1,18 +1,43 @@
-// import { Loader } from './components/Loader';
+import { Loader } from './components/Loader';
 import './App.scss';
-import { Link, Outlet, Route, Routes } from 'react-router-dom';
+import {
+  Navigate,
+  NavLink,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom';
 import { getPeople } from './api';
 import { PeopleTable } from './components/PeopleTable';
 import { useEffect, useState } from 'react';
 import { Person } from './types';
+import classNames from 'classnames';
+
+const STATUS = {
+  resolved: 'resolved',
+  rejected: 'rejected',
+  idle: 'idle',
+  pending: 'pending',
+} as const;
+
+type Status = (typeof STATUS)[keyof typeof STATUS];
 
 export const App = () => {
   const [people, setPeople] = useState<Person[] | null>(null);
+  const [status, setStatus] = useState<Status>('idle');
+  const { pathname } = useLocation();
   const loadPeople = () => {
-    return getPeople().then(data => setPeople(data));
+    return getPeople()
+      .then(data => {
+        setPeople(data);
+        setStatus('resolved');
+      })
+      .catch(() => setStatus('rejected'));
   };
 
   useEffect(() => {
+    setStatus('pending');
     loadPeople();
   }, []);
 
@@ -27,45 +52,66 @@ export const App = () => {
         >
           <div className="container">
             <div className="navbar-brand">
-              <Link className="navbar-item" to="/">
+              <NavLink
+                className={({ isActive }) =>
+                  classNames('navbar-item', {
+                    'has-background-grey-lighter': isActive,
+                  })
+                }
+                to="/"
+              >
                 Home
-              </Link>
+              </NavLink>
 
-              <Link
-                className="navbar-item has-background-grey-lighter"
+              <NavLink
+                className={({ isActive }) =>
+                  classNames('navbar-item', {
+                    'has-background-grey-lighter': isActive,
+                  })
+                }
                 to="people"
               >
                 People
-              </Link>
+              </NavLink>
             </div>
           </div>
         </nav>
 
         <main className="section">
           <div className="container">
+            {pathname === '/home' && <Navigate to="/" replace={true} />}
             <Routes>
               <Route path="/" element={<h1 className="title">Home Page</h1>} />
-              <Route path="/people">
-                <Route index element={<PeopleTable people={people} />} />
-                <Route path="/people/:personName" element={<Outlet />} />
-              </Route>
+              {people?.length !== 0 && status === 'resolved' && (
+                <Route path="/people" element={<PeopleTable people={people} />}>
+                  <Route path=":personSlug" element={<Outlet />} />
+                </Route>
+              )}
+              <Route
+                path="*"
+                element={<h1 className="title">Page not found</h1>}
+              />
             </Routes>
 
             {/* <h1 className="title">Page not found</h1> */}
 
-            {/* <div className="block">
+            <div className="block">
               <div className="box table-container">
-                <Loader />
+                {pathname === '/people' && status === 'pending' && <Loader />}
 
-                <p data-cy="peopleLoadingError" className="has-text-danger">
-                  Something went wrong
-                </p>
+                {status === 'rejected' && (
+                  <p data-cy="peopleLoadingError" className="has-text-danger">
+                    Something went wrong
+                  </p>
+                )}
 
-                <p data-cy="noPeopleMessage">
-                  There are no people on the server
-                </p>
+                {people?.length === 0 && (
+                  <p data-cy="noPeopleMessage">
+                    There are no people on the server
+                  </p>
+                )}
               </div>
-            </div> */}
+            </div>
           </div>
         </main>
       </div>

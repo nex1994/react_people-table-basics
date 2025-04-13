@@ -1,22 +1,56 @@
+import { useLocation } from 'react-router-dom';
 import { Person } from '../../types';
+import { PersonLink } from '../PersonLink';
+import classNames from 'classnames';
 
 type Props = {
   person: Person | null;
   key: string;
+  people: Person[];
 };
 
-export const PersonRow = ({ person }: Props) => {
-  return (
-    <tr data-cy="person">
-      <td>
-        <a href="#/people/jan-van-brussel-1714">{person?.name}</a>
-      </td>
+export const PersonRow = ({ person, people }: Props) => {
+  const { pathname } = useLocation();
+  const activeRowClassName = classNames({
+    'has-background-warning': pathname === `/people/${person?.slug}`,
+  });
+  const personMother: Person | undefined = people.find(
+    searchedPerson => searchedPerson.name === person?.motherName,
+  );
 
-      <td>{person?.sex}</td>
-      <td>{person?.born}</td>
-      <td>{person?.died}</td>
-      <td>{person?.motherName}</td>
-      <td>{person?.fatherName}</td>
-    </tr>
+  const personFather: Person | undefined = people.find(
+    searchedPerson => searchedPerson.name === person?.fatherName,
+  );
+
+  return (
+    <>
+      <tr data-cy="person" className={activeRowClassName}>
+        <td>
+          {person?.slug !== undefined ? (
+            <PersonLink person={person} />
+          ) : (
+            person?.name
+          )}
+        </td>
+
+        <td>{person?.sex}</td>
+        <td>{person?.born}</td>
+        <td>{person?.died}</td>
+        <td>
+          {personMother !== undefined ? (
+            <PersonLink person={personMother} />
+          ) : (
+            <p>{person?.motherName !== null ? person?.motherName : '-'}</p>
+          )}
+        </td>
+        <td>
+          {personFather !== undefined ? (
+            <PersonLink person={personFather} />
+          ) : (
+            <p>{person?.fatherName !== null ? person?.fatherName : '-'}</p>
+          )}
+        </td>
+      </tr>
+    </>
   );
 };

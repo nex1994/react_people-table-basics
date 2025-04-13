@@ -1,4 +1,3 @@
-// import { useParams } from 'react-router-dom';
 import { Person } from '../../types';
 import { PersonRow } from '../PersonRow';
 
@@ -7,8 +6,6 @@ type Props = {
 };
 
 export const PeopleTable = ({ people }: Props) => {
-  // const userName = useParams<{ userName?: string }>();
-
   return (
     <>
       <h1 className="title">People Page</h1>
@@ -34,7 +31,9 @@ export const PeopleTable = ({ people }: Props) => {
 
         <tbody>
           {people?.map(person => {
-            return <PersonRow key={person.name} person={person} />;
+            return (
+              <PersonRow key={person.name} people={people} person={person} />
+            );
           })}
         </tbody>
       </table>
