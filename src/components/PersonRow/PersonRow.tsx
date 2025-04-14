@@ -13,11 +13,11 @@ export const PersonRow = ({ person, people }: Props) => {
   const activeRowClassName = classNames({
     'has-background-warning': pathname === `/people/${person?.slug}`,
   });
-  const personMother: Person | undefined = people.find(
+  const personMother = people.find(
     searchedPerson => searchedPerson.name === person?.motherName,
   );
 
-  const personFather: Person | undefined = people.find(
+  const personFather = people.find(
     searchedPerson => searchedPerson.name === person?.fatherName,
   );
 
